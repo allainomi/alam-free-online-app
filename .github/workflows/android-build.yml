@@ -17,11 +17,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # 2️⃣ Setup Flutter (specific stable version)
+    # 2️⃣ Setup Flutter (explicit version)
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.13.7'
+        flutter-version: '3.13.7'  # <-- specify exact stable version
 
     # 3️⃣ Install dependencies
     - name: Flutter Pub Get
@@ -31,7 +31,7 @@ jobs:
     - name: Ensure android folder
       run: mkdir -p android
 
-    # 5️⃣ Decode keystore (optional, only if signing)
+    # 5️⃣ Decode Keystore (optional)
     - name: Decode Keystore
       if: ${{ secrets.KEYSTORE_BASE64 }}
       run: echo ${{ secrets.KEYSTORE_BASE64 }} | base64 --decode > android/keystore.jks
@@ -41,6 +41,12 @@ jobs:
       run: flutter build apk --release
 
     # 7️⃣ Upload APK as artifact
+    - name: Upload Release APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-release.apk
+        path: build/app/outputs/flutter-apk/app-release.apk
+
     - name: Upload Release APK
       uses: actions/upload-artifact@v4
       with:
