@@ -1,25 +1,39 @@
-
-name: Flutter CI/CD
+name: Flutter Build APK
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
+      # Checkout the repo
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Setup Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.13.0'
-      - run: flutter pub get
-      - run: flutter build apk --release
-      - name: Upload APK
-        uses: actions/upload-artifact@v3
+          flutter-version: '3.13.6' # یا آپ کی Flutter version
+
+      # Install dependencies
+      - name: Install Dependencies
+        run: flutter pub get
+
+      # Build APK (debug)
+      - name: Build Debug APK
+        run: flutter build apk --debug
+
+      # Upload APK artifact
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
         with:
-          name: app-release.apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: app-debug.apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
