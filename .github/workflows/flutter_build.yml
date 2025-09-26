@@ -1,47 +1,33 @@
-name: Flutter Build & Test
+name: Flutter Release Build
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Checkout code
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # 2. Setup Flutter
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
         flutter-version: 'stable'
 
-    # 3. Enable Flutter dependencies
     - name: Flutter Pub Get
       run: flutter pub get
 
-    # 4. Analyze code
-    - name: Flutter Analyze
-      run: flutter analyze
+    - name: Build Release APK
+      run: |
+        echo ${{ secrets.KEYSTORE_BASE64 }} | base64 --decode > android/keystore.jks
+        flutter build apk --release
 
-    # 5. Run tests (if any)
-    - name: Flutter Test
-      run: flutter test
-
-    # 6. Build APK (debug)
-    - name: Build APK (Debug)
-      run: flutter build apk --debug
-
-    # 7. Upload APK as artifact
-    - name: Upload APK
-      uses: actions/upload-artifact@v3
+    - name: Upload Release APK
+      uses: actions/upload-artifact@v4   # <-- یہاں v4 استعمال کریں
       with:
-        name: app-debug.apk
-        path: build/app/outputs/flutter-apk/app-debug.apk
+        name: app-release.apk
+        path: build/app/outputs/flutter-apk/app-release.apk
