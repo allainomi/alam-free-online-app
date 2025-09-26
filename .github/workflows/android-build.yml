@@ -4,56 +4,45 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build-release:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout code
+    # 1️⃣ Checkout repository
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # Step 2: Setup Flutter
+    # 2️⃣ Setup Flutter (specific stable version)
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: 'stable'
+        flutter-version: '3.13.7'
 
-    # Step 3: Install dependencies
+    # 3️⃣ Install dependencies
     - name: Flutter Pub Get
       run: flutter pub get
 
-    # Step 4: Setup Android Keystore
-    - name: Setup Keystore
-      run: |
-        mkdir -p android
-        echo ${{ secrets.KEYSTORE_BASE64 }} | base64 --decode > android/keystore.jks
+    # 4️⃣ Ensure android folder exists (for keystore)
+    - name: Ensure android folder
+      run: mkdir -p android
 
-    # Step 5: Build release APK
+    # 5️⃣ Decode keystore (optional, only if signing)
+    - name: Decode Keystore
+      if: ${{ secrets.KEYSTORE_BASE64 }}
+      run: echo ${{ secrets.KEYSTORE_BASE64 }} | base64 --decode > android/keystore.jks
+
+    # 6️⃣ Build release APK
     - name: Build Release APK
-      run: flutter build apk --release --no-shrink
+      run: flutter build apk --release
 
-    # Step 6: Upload APK artifact
+    # 7️⃣ Upload APK as artifact
     - name: Upload Release APK
       uses: actions/upload-artifact@v4
       with:
         name: app-release.apk
         path: build/app/outputs/flutter-apk/app-release.apk
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: |
-          flutter build apk --release \
-          --flavor production \
-          --dart-define=KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD \
-          --dart-define=KEY_ALIAS=$KEY_ALIAS \
-          --dart-define=KEY_PASSWORD=$KEY_PASSWORD
-
-      # 6. Upload Release APK as artifact
-      - name: Upload Release APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release.apk
-          path: build/app/outputs/flutter-apk/app-release.apk
