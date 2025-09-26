@@ -1,5 +1,23 @@
 name: alam_free_online_app
+description: A full-featured Islamic app
 version: 1.0.0+1
+
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+
 dependencies:
   flutter:
     sdk: flutter
+  cupertino_icons: ^1.0.5
+  # یہاں باقی dependencies add کریں
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/data/
+    - assets/audio/
+    - assets/images/
