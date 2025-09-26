@@ -1,39 +1,45 @@
-name: Flutter Release Build with Signing
+name: Flutter Release Build
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  build:
+  build-release:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    # Step 1: Checkout code
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      # 2. Setup Flutter
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.13.6' # latest stable version
+    # Step 2: Setup Flutter
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: 'stable'
 
-      # 3. Install dependencies
-      - name: Flutter Pub Get
-        run: flutter pub get
+    # Step 3: Install dependencies
+    - name: Flutter Pub Get
+      run: flutter pub get
 
-      # 4. Decode Keystore from GitHub Secret
-      - name: Setup Keystore
-        run: |
-          echo ${{ secrets.KEYSTORE_BASE64 }} | base64 --decode > android/keystore.jks
+    # Step 4: Setup Android Keystore
+    - name: Setup Keystore
+      run: |
+        mkdir -p android
+        echo ${{ secrets.KEYSTORE_BASE64 }} | base64 --decode > android/keystore.jks
 
-      # 5. Build Release APK (signed)
-      - name: Build Release APK
+    # Step 5: Build release APK
+    - name: Build Release APK
+      run: flutter build apk --release --no-shrink
+
+    # Step 6: Upload APK artifact
+    - name: Upload Release APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-release.apk
+        path: build/app/outputs/flutter-apk/app-release.apk
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
