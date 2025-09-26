@@ -1,0 +1,43 @@
+name: Flutter Release Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Step 2: Install Flutter manually (latest stable)
+    - name: Install Flutter
+      run: |
+        git clone https://github.com/flutter/flutter.git -b stable --depth 1
+        echo "$PWD/flutter/bin" >> $GITHUB_PATH
+        flutter --version
+
+    # Step 3: Install dependencies
+    - name: Flutter Pub Get
+      run: flutter pub get
+
+    # Step 4: Setup Android Keystore
+    - name: Setup Keystore
+      run: |
+        mkdir -p android
+        echo ${{ secrets.KEYSTORE_BASE64 }} | base64 --decode > android/keystore.jks
+
+    # Step 5: Build release APK
+    - name: Build Release APK
+      run: flutter build apk --release --no-shrink
+
+    # Step 6: Upload APK artifact
+    - name: Upload Release APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-release.apk
+        path: build/app/outputs/flutter-apk/app-release.apk
