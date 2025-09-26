@@ -1,4 +1,4 @@
-name: Flutter Build APK
+name: Flutter Build & Test
 
 on:
   push:
@@ -13,27 +13,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repo
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+    # 1. Checkout code
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      # Setup Flutter
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.13.6' # یا آپ کی Flutter version
+    # 2. Setup Flutter
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: 'stable'
 
-      # Install dependencies
-      - name: Install Dependencies
-        run: flutter pub get
+    # 3. Enable Flutter dependencies
+    - name: Flutter Pub Get
+      run: flutter pub get
 
-      # Build APK (debug)
-      - name: Build Debug APK
-        run: flutter build apk --debug
+    # 4. Analyze code
+    - name: Flutter Analyze
+      run: flutter analyze
 
-      # Upload APK artifact
-      - name: Upload Debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug.apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+    # 5. Run tests (if any)
+    - name: Flutter Test
+      run: flutter test
+
+    # 6. Build APK (debug)
+    - name: Build APK (Debug)
+      run: flutter build apk --debug
+
+    # 7. Upload APK as artifact
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-debug.apk
+        path: build/app/outputs/flutter-apk/app-debug.apk
